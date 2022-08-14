@@ -2,65 +2,44 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ConnectionHelper implements Closeable {
+public class ConnectionHelper {
     private final Socket socket;
-    private final BufferedReader in;
-    private final PrintWriter out;
+    private BufferedReader in;
+    private PrintWriter out;
 
-    public ConnectionHelper(ServerSocket server) {
-        try {
-            this.socket = server.accept();
-            this.in = createReader();
-            this.out = createWriter();
-        } catch (IOException e) {
-            throw new RuntimeException();
-        }
+    public ConnectionHelper(ServerSocket server) throws IOException {
+        this.socket = server.accept();
+        init();
     }
 
-    public ConnectionHelper(String ip, int port) {
-        try {
-            this.socket = new Socket(ip, port);
-            this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-            this.out = new PrintWriter(this.socket.getOutputStream(), true);
-        } catch (IOException e) {
-            throw new RuntimeException();
-        }
+    public ConnectionHelper(String ip, int port) throws IOException {
+        this.socket = new Socket(ip, port);
+        init();
     }
 
-    private PrintWriter createWriter() {
-        try {
-            return new PrintWriter(this.socket.getOutputStream(), true);
-        } catch (IOException e) {
-            throw new RuntimeException();
-        }
+    private void init() throws IOException {
+        this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+        this.out = new PrintWriter(this.socket.getOutputStream(), true);
     }
 
-    private BufferedReader createReader() {
-        try {
-            return new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-        } catch (IOException e) {
-            throw new RuntimeException();
-        }
-    }
-
-    public void writeLine(String message) {
+    public void sendMessage(String message) {
         this.out.println(message);
+        this.out.flush();
     }
 
-    public String readLine() {
+    public String readMessage() {
         try {
             return this.in.readLine();
         } catch (IOException e) {
-            throw new RuntimeException();
+            System.out.println(e.getMessage());
         }
+        return null;
     }
 
     public int getPort() {
         return this.socket.getPort();
     }
 
-
-    @Override
     public void close() throws IOException {
         this.socket.close();
         this.in.close();
