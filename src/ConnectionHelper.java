@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ConnectionHelper {
+public class ConnectionHelper implements AutoCloseable {
     private final Socket socket;
     private BufferedReader in;
     private PrintWriter out;
@@ -40,6 +40,8 @@ public class ConnectionHelper {
         return this.socket.getPort();
     }
 
+
+    @Override
     public void close() throws IOException {
         this.socket.close();
         this.in.close();
